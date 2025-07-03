@@ -1,0 +1,32 @@
+{
+  "name": "veriflow-contracts",
+  "version": "1.0.0",
+  "description": "VeriFlow AI Data Marketplace Smart Contracts on Filecoin",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:calibration": "hardhat deploy --network calibration",
+    "deploy:mainnet": "hardhat deploy --network mainnet",
+    "verify": "hardhat verify",
+    "clean": "hardhat clean",
+    "typechain": "hardhat typechain"
+  },
+  "keywords": ["filecoin", "ai", "marketplace", "usdfc", "tellor", "blockchain"],
+  "author": "VeriFlow Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@typechain/hardhat": "^9.1.0",
+    "hardhat": "^2.22.4",
+    "hardhat-deploy": "^0.12.4"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.1",
+    "@openzeppelin/contracts-upgradeable": "^5.0.1",
+    "@zondax/filecoin-solidity": "^4.0.3",
+    "usingtellor": "^5.0.5",
+    "dotenv": "^16.4.5",
+    "fevmate": "^1.0.3"
+  }
+}
