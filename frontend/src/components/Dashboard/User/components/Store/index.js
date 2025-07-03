@@ -24,8 +24,8 @@ export default function Store() {
       tags: ["classification", "images", "large-scale"],
       lastUpdated: "2 days ago",
       aiModelCompatibility: ["CNN", "ResNet", "EfficientNet"]
-    },
-    {
+  },
+  {
       id: 2,
       title: "Financial News Sentiment Analysis Corpus",
       description: "Curated financial news articles with sentiment labels.",

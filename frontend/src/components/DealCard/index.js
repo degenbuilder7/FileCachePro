@@ -87,7 +87,7 @@ export default function DealCard({ deal, isChallenge = false }) {
           <p><strong>Start:</strong> {getFormattedDate(startTime)}</p>
           <p><strong>End:</strong> {getFormattedDate(endTime)}</p>
         </div>
-        
+
         <div className={styles.actions}>
           <button
             onClick={() => setShowActions(!showActions)}

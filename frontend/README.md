@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# VerifiAI Frontend
+
+This is the frontend application for VerifiAI - the first verifiable AI training data marketplace on Filecoin.
+
+## 🚀 VerifiAI Features
+
+- **AI Data Marketplace**: Browse and purchase verified AI training datasets
+- **Provider Dashboard**: Manage datasets, earnings, and reputation
+- **Verification System**: Submit AI models for cryptographic verification via Tellor oracles
+- **WFIL Payments**: Seamless transactions using Wrapped FIL tokens
+- **Real-time Updates**: Live marketplace statistics and transaction status
+
+## 🛠️ Technology Stack
+
+- **Framework**: Next.js 14 with TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui components
+- **Web3**: wagmi + viem for Filecoin interactions
+- **State Management**: React hooks and context
+- **Icons**: Lucide React icons
+
+## 🔗 Filecoin Integration
+
+- **Network**: Filecoin Calibration Testnet
+- **RPC**: https://calibration.filfox.info/rpc/v1
+- **Explorer**: https://calibration.filfox.info/en
+- **Contracts**: VerifiAI smart contracts deployed on Calibration
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
 
 ```bash
-npm run dev
+bun install
 # or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then, run the development server:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+bun dev
+# or
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the VerifiAI marketplace.
+
+## 🎯 Main Components
+
+### VerifiAI Marketplace (`/src/components/VerifiAIMarketplace`)
+- Dataset browsing and filtering
+- WFIL payments integration
+- Provider staking functionality
+
+### Provider Dashboard (`/src/components/ProviderDashboard`)
+- Dataset upload and management
+- Earnings tracking
+- Performance analytics
+
+### Verification Dashboard (`/src/components/VerificationDashboard`)
+- AI model training submission
+- Tellor oracle verification
+- Performance metrics tracking
+
+## 🔧 Configuration
+
+Update contract addresses in `/src/config/contracts.js` after deployment:
+
+```javascript
+export const FILECOIN_CALIBRATION_CONFIG = {
+  contracts: {
+    VerifiAIMarketplace: "0x...", // Update after deployment
+    VerifiAIPayments: "0x...",    // Update after deployment
+    // ...
+  }
+};
+```
+
+## 📱 Responsive Design
+
+The VerifiAI frontend is fully responsive and optimized for:
+- Desktop browsers
+- Tablet devices  
+- Mobile phones
+- Web3 wallets (MetaMask, etc.)
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+To learn more about the technologies used:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
+- [Tailwind CSS](https://tailwindcss.com/docs) - utility-first CSS framework
+- [wagmi Documentation](https://wagmi.sh/) - React hooks for Ethereum
+- [Filecoin Documentation](https://docs.filecoin.io/) - Filecoin network guide
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🏆 Protocol Labs Genesis Hackathon 2025
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Built for the **Fresh Code Challenge - AI & Autonomous Infrastructure**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+VerifiAI demonstrates the future of verifiable AI data markets on Filecoin with:
+- F3 Fast Finality (450x faster transactions)
+- Tellor Oracle verification
+- WFIL stable payments
+- Production-ready UI/UX

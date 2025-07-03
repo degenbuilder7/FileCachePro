@@ -1,170 +1,331 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { useAccount } from "wagmi";
-import { useEffect } from "react";
-import AIMarketplace from "@/components/AIMarketplace";
+
+import { useState } from "react";
+import { useUser } from "@/context/userContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import VerifiAIMarketplace from "@/components/VerifiAIMarketplace";
+import ProviderDashboard from "@/components/ProviderDashboard";
+import VerificationDashboard from "@/components/VerificationDashboard";
+import VerifiAIDashboard from "@/components/VerifiAIDashboard";
+import WalletConnect from "@/components/Header/components/WalletConnect";
 
 export default function Home() {
-  const { openConnectModal } = useConnectModal();
-  const { isConnected } = useAccount();
-  const router = useRouter();
+  const { user, handleChangeRole, handleChangeUser } = useUser();
+  const { role, roleChoose } = user;
+  const [activeSection, setActiveSection] = useState('marketplace');
 
-  // Show AI marketplace for connected users
-  if (isConnected) {
-    return <AIMarketplace />;
+  // If user has chosen a role, show the appropriate dashboard
+  if (roleChoose) {
+    const sections = [
+      { id: 'marketplace', name: '🏪 Marketplace', component: VerifiAIMarketplace },
+      { id: 'dashboard', name: '📊 Dashboard', component: VerifiAIDashboard },
+      { id: 'provider', name: '📤 Provider Hub', component: ProviderDashboard },
+      { id: 'verification', name: '🔬 AI Verification', component: VerificationDashboard },
+    ];
+
+    const ActiveComponent = sections.find(s => s.id === activeSection)?.component || VerifiAIMarketplace;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        {/* Navigation */}
+        <nav className="bg-white border-b shadow-sm sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-8">
+                <h1 className="text-2xl font-bold vf-gradient-primary bg-clip-text text-transparent">
+                  VerifiAI
+                </h1>
+                <div className="flex gap-2">
+                  {sections.map((section) => (
+                    <Button
+                      key={section.id}
+                      variant={activeSection === section.id ? "default" : "ghost"}
+                      onClick={() => setActiveSection(section.id)}
+                      className={activeSection === section.id ? "vf-button-primary" : ""}
+                    >
+                      {section.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">
+                  {role === 'user' ? '👤 AI Developer' : '⛏️ Data Provider'}
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    handleChangeUser('roleChoose', false);
+                    setActiveSection('marketplace');
+                  }}
+                >
+                  🏠 Back to Home
+                </Button>
+                <WalletConnect />
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <main className="py-8">
+          <ActiveComponent />
+        </main>
+      </div>
+    );
   }
 
-  // Show VeriFlow landing page for non-connected users
+  // Landing page for new users
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative z-10 pb-8 bg-transparent sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
-            <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-              <div className="sm:text-center lg:text-left">
-                <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                  <span className="block xl:inline">Verifiable</span>
-                  <span className="block text-indigo-600 xl:inline"> AI Data</span>
-                  <span className="block xl:inline"> Marketplace</span>
-                </h1>
-                <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                  VeriFlow is the first marketplace for verifiable AI training data on Filecoin. 
-                  Buy and sell AI datasets with cryptographic proofs, automated verification, 
-                  and USDFC stablecoin payments powered by F3 fast finality.
-                </p>
-                <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                  <div className="rounded-md shadow">
-                    <button
-                      onClick={openConnectModal}
-                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition-all duration-200 transform hover:scale-105"
-                    >
-                      Connect Wallet & Start Trading
-                    </button>
-                  </div>
-                  <div className="mt-3 sm:mt-0 sm:ml-3">
-                    <button
-                      onClick={() => window.open("https://docs.veriflow.ai", "_blank")}
-                      className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10 transition-all duration-200"
-                    >
-                      Learn More
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </main>
-          </div>
-        </div>
-        <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-          <div className="h-56 w-full bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center">
-            <div className="text-white text-center">
-              <div className="text-6xl mb-4">🤖</div>
-              <div className="text-2xl font-bold">AI + Blockchain</div>
-              <div className="text-lg">Verifiable Data Marketplace</div>
-              <div className="text-sm mt-2 opacity-80">Powered by Filecoin & USDFC</div>
+      <section className="relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="text-center">
+            <h1 className="text-6xl font-bold mb-6">
+              <span className="vf-gradient-primary bg-clip-text text-transparent">
+                VerifiAI
+              </span>
+            </h1>
+            <p className="text-2xl text-gray-600 mb-4">
+              Verifiable AI Training Data Marketplace
+            </p>
+            <p className="text-lg text-gray-500 mb-8 max-w-3xl mx-auto">
+              The first marketplace for verifiable AI training data on Filecoin. 
+              Trade with cryptographic proofs, USDFC payments, and F3 fast finality.
+            </p>
+            
+            <div className="flex justify-center gap-4 mb-12">
+              <Button 
+                size="lg" 
+                className="vf-button-primary text-lg px-8 py-4"
+                onClick={() => {
+                  // Set user as AI Developer and redirect to marketplace
+                  handleChangeRole('user');
+                  setActiveSection('marketplace');
+                }}
+              >
+                🚀 Explore Marketplace
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8 py-4"
+                onClick={() => {
+                  // Scroll to features section
+                  document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                📖 Learn More
+              </Button>
+            </div>
+
+            {/* Hackathon Badge */}
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-3 rounded-full border">
+              <span className="text-2xl">🏆</span>
+              <span className="font-semibold text-purple-800">
+                Protocol Labs Genesis Hackathon 2025 • Fresh Code Challenge
+              </span>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Features Section */}
-      <div className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:text-center">
-            <h2 className="text-base text-indigo-600 font-semibold tracking-wide uppercase">Features</h2>
-            <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              Revolutionary AI Data Economy
-            </p>
-            <p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-              Built for the $9 trillion AI market with cutting-edge blockchain technology
+      <section id="features-section" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Transforming the <span className="vf-gradient-primary bg-clip-text text-transparent">$9 Trillion AI Market</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              VerifiAI brings cryptographic verification, autonomous payments, and decentralized storage 
+              to AI training data markets.
             </p>
           </div>
 
-          <div className="mt-10">
-            <div className="space-y-10 md:space-y-0 md:grid md:grid-cols-3 md:gap-x-8 md:gap-y-10">
-              <div className="relative">
-                <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                  🔬
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <Card className="vf-card text-center">
+              <CardHeader>
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">⚡</span>
                 </div>
-                <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Verifiable Training</p>
-                <p className="mt-2 ml-16 text-base text-gray-500">
-                  Cryptographic proofs ensure AI models actually used your data for training.
+                <CardTitle>F3 Fast Finality</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  450x faster transaction finality. Minutes instead of hours for real-time AI data trading.
                 </p>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="relative">
-                <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                  💰
+            <Card className="vf-card text-center">
+              <CardHeader>
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">💰</span>
                 </div>
-                <p className="ml-16 text-lg leading-6 font-medium text-gray-900">USDFC Payments</p>
-                <p className="mt-2 ml-16 text-base text-gray-500">
-                  Stable cryptocurrency payments powered by Filecoin's new stablecoin.
+                <CardTitle>USDFC Payments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Stable, efficient payments with Filecoin's native stablecoin. No volatility, just value.
                 </p>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="relative">
-                <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                  ⚡
+            <Card className="vf-card text-center">
+              <CardHeader>
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">🔐</span>
                 </div>
-                <p className="ml-16 text-lg leading-6 font-medium text-gray-900">F3 Fast Finality</p>
-                <p className="mt-2 ml-16 text-base text-gray-500">
-                  450x faster transaction confirmation for real-time marketplace operations.
+                <CardTitle>Tellor Verification</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  AI model performance verified by decentralized oracles. Cryptographic proof of training.
                 </p>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="relative">
-                <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                  🛡️
+            <Card className="vf-card text-center">
+              <CardHeader>
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">📦</span>
                 </div>
-                <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Data Provenance</p>
-                <p className="mt-2 ml-16 text-base text-gray-500">
-                  Immutable chain of custody from data source to model training.
+                <CardTitle>PDP Hot Storage</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  Proof of Data Possession ensures your ML datasets are always available and verifiable.
                 </p>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
 
-              <div className="relative">
-                <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                  📊
-                </div>
-                <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Quality Scoring</p>
-                <p className="mt-2 ml-16 text-base text-gray-500">
-                  Multi-dimensional quality metrics powered by Tellor oracles.
-                </p>
-              </div>
-
-              <div className="relative">
-                <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-indigo-500 text-white">
-                  🌐
-                </div>
-                <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Decentralized Storage</p>
-                <p className="mt-2 ml-16 text-base text-gray-500">
-                  Your data is stored securely on IPFS and Filecoin network.
-                </p>
-              </div>
+      {/* Stats Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-4xl font-bold mb-2">$9T</div>
+              <div className="text-blue-100">Global AI Market Size</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold mb-2">450x</div>
+              <div className="text-blue-100">Faster with F3 Finality</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold mb-2">100%</div>
+              <div className="text-blue-100">Verifiable Training Data</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold mb-2">24/7</div>
+              <div className="text-blue-100">Autonomous Marketplace</div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* CTA Section */}
-      <div className="bg-indigo-600">
-        <div className="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-            <span className="block">Ready to revolutionize AI training?</span>
-            <span className="block">Start with VeriFlow today.</span>
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto text-center px-6">
+          <h2 className="text-4xl font-bold mb-6">
+            Ready to Join the <span className="vf-gradient-primary bg-clip-text text-transparent">AI Revolution</span>?
           </h2>
-          <p className="mt-4 text-lg leading-6 text-indigo-200">
-            Join the first verifiable AI data marketplace and earn from your high-quality datasets.
+          <p className="text-xl text-gray-600 mb-8">
+            Whether you're an AI developer seeking quality data or a data provider looking to monetize your datasets, 
+            VerifiAI has you covered.
           </p>
-          <button
-            onClick={openConnectModal}
-            className="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 sm:w-auto"
-          >
-            Get Started Now
-          </button>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+            <Card className="vf-card text-center p-8 hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="text-6xl mb-4">👤</div>
+              <h3 className="text-2xl font-bold mb-4">AI Developer</h3>
+              <p className="text-gray-600 mb-6">
+                Access verified, high-quality training data with cryptographic guarantees
+              </p>
+              <Button 
+                className="w-full vf-button-primary"
+                onClick={() => {
+                  // Set user as AI Developer and redirect to marketplace
+                  handleChangeRole('user');
+                  setActiveSection('marketplace');
+                }}
+              >
+                Start Building AI Models
+              </Button>
+            </Card>
+
+            <Card className="vf-card text-center p-8 hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="text-6xl mb-4">⛏️</div>
+              <h3 className="text-2xl font-bold mb-4">Data Provider</h3>
+              <p className="text-gray-600 mb-6">
+                Monetize your datasets with verifiable quality metrics and autonomous payments
+              </p>
+              <Button 
+                className="w-full vf-button-primary"
+                onClick={() => {
+                  // Set user as Data Provider and redirect to provider dashboard
+                  handleChangeRole('provider');
+                  setActiveSection('provider');
+                }}
+              >
+                Start Earning from Data
+              </Button>
+            </Card>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-2xl font-bold mb-4 vf-gradient-primary bg-clip-text text-transparent">
+                VerifiAI
+              </h3>
+              <p className="text-gray-400">
+                Verifiable AI training data marketplace built on Filecoin for the Protocol Labs Genesis Hackathon 2025.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Marketplace</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>Browse Datasets</li>
+                <li>Provider Dashboard</li>
+                <li>AI Verification</li>
+                <li>USDFC Payments</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Technology</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>Filecoin Network</li>
+                <li>F3 Fast Finality</li>
+                <li>Tellor Oracles</li>
+                <li>IPFS Storage</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Connect</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li>GitHub</li>
+                <li>Discord</li>
+                <li>Documentation</li>
+                <li>Support</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2025 VerifiAI. Built for Protocol Labs Genesis Hackathon 2025.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

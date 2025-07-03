@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-interface VeriFlowDashboardProps {
+interface VerifiAIDashboardProps {
   className?: string;
 }
 
@@ -17,7 +17,7 @@ interface DatasetStats {
   averageRating: number;
 }
 
-const VeriFlowDashboard: React.FC<VeriFlowDashboardProps> = ({ className }) => {
+const VerifiAIDashboard: React.FC<VerifiAIDashboardProps> = ({ className }) => {
   
   const [stats] = React.useState<DatasetStats>({
     totalDatasets: 42,
@@ -31,7 +31,7 @@ const VeriFlowDashboard: React.FC<VeriFlowDashboardProps> = ({ className }) => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold vf-gradient-primary bg-clip-text text-transparent">
-          VeriFlow AI Data Marketplace
+          VerifiAI Data Marketplace
         </h1>
         <p className="text-muted-foreground mt-2">
           First verifiable AI training data marketplace on Filecoin with cryptographic proofs
@@ -176,4 +176,4 @@ const VeriFlowDashboard: React.FC<VeriFlowDashboardProps> = ({ className }) => {
   );
 };
 
-export default VeriFlowDashboard; 
+export default VerifiAIDashboard; 

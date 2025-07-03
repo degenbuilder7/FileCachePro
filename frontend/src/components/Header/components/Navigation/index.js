@@ -20,17 +20,17 @@ export default function Navigation() {
 
   return (
     <div className={styles.navigation}>
-      <nav className={styles.nav}>
+    <nav className={styles.nav}>
         <ul className={styles.navList}>
           {menuItems.map((item) => (
             <li key={item.name}>
               <Link href={item.href} className={styles.navLink}>
                 {item.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
 
       {!roleChoose && (
         <button

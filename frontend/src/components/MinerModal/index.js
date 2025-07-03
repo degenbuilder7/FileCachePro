@@ -14,7 +14,7 @@ export default function MinerModal({ open, setOpen }) {
     pricePerGB: "",
     paymentToken: "USDFC",
   });
-  
+
   const { user } = useUser();
 
   const handleInputChange = (field, value) => {
@@ -73,7 +73,7 @@ export default function MinerModal({ open, setOpen }) {
             onChange={(e) => handleInputChange("location", e.target.value)}
             required
           />
-          
+
           <TextField
             label="Price per GB (USDFC)"
             placeholder="0.0"
