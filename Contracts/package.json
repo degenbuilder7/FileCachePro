@@ -12,7 +12,14 @@
     "clean": "hardhat clean",
     "typechain": "hardhat typechain"
   },
-  "keywords": ["filecoin", "ai", "marketplace", "usdfc", "tellor", "blockchain"],
+  "keywords": [
+    "filecoin",
+    "ai",
+    "marketplace",
+    "usdfc",
+    "tellor",
+    "blockchain"
+  ],
   "author": "VeriFlow Team",
   "license": "MIT",
   "devDependencies": {
@@ -25,8 +32,9 @@
     "@openzeppelin/contracts": "^5.0.1",
     "@openzeppelin/contracts-upgradeable": "^5.0.1",
     "@zondax/filecoin-solidity": "^4.0.3",
-    "usingtellor": "^5.0.5",
     "dotenv": "^16.4.5",
-    "fevmate": "^1.0.3"
+    "ethers": "^6.15.0",
+    "fevmate": "^1.0.3",
+    "usingtellor": "^5.0.5"
   }
 }

@@ -29,14 +29,14 @@ contract USDFC is ERC20, Ownable {
     
     /**
      * @dev Mint USDFC by depositing FIL as collateral (mock version)
-     * @notice Real USDFC requires 110% collateral ratio
+     * @notice For testing: 1000 USDFC per FIL (0.1 FIL = 100 USDFC)
      */
     function mintWithCollateral() external payable {
         require(msg.value > 0, "Must send FIL as collateral");
         
-        // Calculate USDFC to mint (assuming 1 FIL = $5 for testing)
-        // With 110% collateral ratio: 1 FIL ($5) -> 4.54 USDFC
-        uint256 usdcAmount = (msg.value * 454) / 100; // 4.54 USDFC per FIL
+        // Calculate USDFC to mint (generous for testing)
+        // 1000 USDFC per FIL (0.1 FIL = 100 USDFC)
+        uint256 usdcAmount = msg.value * 1000; // 1000 USDFC per FIL
         
         collateralDeposits[msg.sender] += msg.value;
         _mint(msg.sender, usdcAmount);
@@ -52,8 +52,8 @@ contract USDFC is ERC20, Ownable {
     function redeem(uint256 amount) external {
         require(balanceOf(msg.sender) >= amount, "Insufficient USDFC balance");
         
-        // Calculate FIL to return
-        uint256 filAmount = (amount * 100) / 454; // Reverse calculation
+        // Calculate FIL to return (reverse of 1000 USDFC per FIL)
+        uint256 filAmount = amount / 1000; // 1000 USDFC = 1 FIL
         require(collateralDeposits[msg.sender] >= filAmount, "Insufficient collateral");
         
         collateralDeposits[msg.sender] -= filAmount;
@@ -95,8 +95,8 @@ contract USDFC is ERC20, Ownable {
         if (userBalance == 0) {
             collateralRatio = 0;
         } else {
-            // Calculate ratio: (collateral * 454 / 100) / userBalance * 100
-            collateralRatio = (depositedCollateral * 454) / userBalance;
+            // Calculate ratio: (collateral * 1000) / userBalance * 100
+            collateralRatio = (depositedCollateral * 1000 * 100) / userBalance;
         }
     }
     
@@ -106,8 +106,9 @@ contract USDFC is ERC20, Ownable {
     receive() external payable {
         require(msg.value > 0, "Must send FIL as collateral");
         
-        // Calculate USDFC to mint (assuming 1 FIL = $5 for testing)
-        uint256 usdcAmount = (msg.value * 454) / 100;
+        // Calculate USDFC to mint (generous for testing)
+        // 1000 USDFC per FIL (0.1 FIL = 100 USDFC)
+        uint256 usdcAmount = msg.value * 1000; // 1000 USDFC per FIL
         
         collateralDeposits[msg.sender] += msg.value;
         _mint(msg.sender, usdcAmount);

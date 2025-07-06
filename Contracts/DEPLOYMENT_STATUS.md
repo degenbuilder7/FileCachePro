@@ -1,22 +1,21 @@
 # VeriFlow AI Marketplace Deployment Status
 ## Filecoin Calibration Testnet (Chain ID: 314159)
 
-**Deployment Date**: Latest attempt on 2025
+**Deployment Date**: Successfully completed on 2025
 
 ### ✅ Successfully Deployed Contracts
 
 | Contract | Address | Status | Transaction Hash |
 |----------|---------|--------|------------------|
-| **USDFC Token** | `0x0f703F65596731cFc036cE4eb2acEF37B9169a6e` | ✅ Deployed | - |
+| **USDFC Token** | `0x14b547e6d31705dab3bf1a382bAFFd8274127819` | ✅ DEPLOYED - UPDATED | `0x40f26a99dd85e4816315b4c7ceac22679b852a23c202570ef9e075878539a0b6` |
 | **VeriFlowMarketApiHelper** | `0x6aEf0883c246435A60AD5921582b22c9a7132175` | ✅ Deployed | `0x4adb7f3282d32a663a54fa79c9918752bc10cc882962aa5b7ee95dbb7f02b8e6` |
+| **VerifiAIMarketplace** | `0xc2BA3241E24314a3d2738B2e9767cc332AFdaD24` | ✅ REDEPLOYED - FIXED | Fixed USDFC address mismatch |
+| **VerifiAIPayments** | `0x1B4d1eDE4F7F22BE0Ce596203765291BBb59E9dC` | ✅ Deployed | Successfully deployed |
+| **VerifiAIVerification** | `0xA4643b8582C4751457030b3c980B2aACcA660CC5` | ✅ Deployed | Successfully deployed |
 
-### ⏳ Pending Deployment
+### 🎉 Deployment Complete
 
-| Contract | Status | Issue |
-|----------|--------|-------|
-| **VerifiAIMarketplace** | ❌ Failed | Nonce conflicts during deployment |
-| **VerifiAIPayments** | ❌ Failed | Nonce conflicts during deployment |
-| **VerifiAIVerification** | ❌ Failed | Nonce conflicts during deployment |
+All core contracts have been successfully deployed to the Filecoin Calibration testnet! The VeriFlow AI Data Marketplace is now fully operational.
 
 ### 🔧 Configuration Constants
 
@@ -31,37 +30,84 @@ const NETWORK_CONFIG = {
 }
 ```
 
-### 📋 Next Steps
+### ✅ Integration Status
 
-1. **Wait for Network Stabilization**: Allow current transactions to be fully processed (5+ confirmations)
-2. **Deploy Remaining Contracts**: Complete deployment of VerifiAIMarketplace, VerifiAIPayments, and VerifiAIVerification
-3. **Update Frontend**: Update contract addresses and ABIs in frontend configuration
-4. **Test Integration**: Verify end-to-end functionality between contracts and frontend
-5. **Contract Verification**: Submit contracts for verification on Filecoin block explorer
+1. **Smart Contracts**: ✅ All deployed and verified
+2. **Frontend Configuration**: ✅ Contract addresses and ABIs updated  
+3. **Wagmi Integration**: ✅ Contracts accessible via hooks
+4. **USDFC Token**: ✅ Ready for marketplace transactions
+5. **Contract Testing**: ✅ Connection verification implemented
 
-### 🚨 Known Issues
+### 🚀 Ready for Demo
 
-- **Nonce Management**: Filecoin Calibration network experiencing transaction congestion causing nonce conflicts
-- **Gas Estimation**: Some contracts require manual gas limit setting due to complex MarketAPI calls
-- **Transaction Finality**: F3 fast finality should reduce confirmation times to ~2 minutes
+The marketplace is now ready for:
+- **Data Provider Registration**: Stake USDFC to become a verified provider
+- **Dataset Listing**: Upload and monetize AI training datasets  
+- **Data Purchasing**: Buy verified datasets with USDFC payments
+- **AI Verification**: Submit models for cryptographic verification
+- **Real-time Analytics**: Track marketplace activity and earnings
 
 ### 🔗 Useful Links
 
 - [Filecoin Calibration Explorer](https://calibration.filfox.info/)
-- [USDFC Token on Explorer](https://calibration.filfox.info/en/address/0x0f703F65596731cFc036cE4eb2acEF37B9169a6e)
-- [VeriFlowMarketApiHelper on Explorer](https://calibration.filfox.info/en/address/0x6aEf0883c246435A60AD5921582b22c9a7132175)
+- [USDFC Token on Explorer](https://calibration.filfox.info/en/address/0x14b547e6d31705dab3bf1a382bAFFd8274127819)
+- [VerifiAIMarketplace on Explorer](https://calibration.filfox.info/en/address/0xc2BA3241E24314a3d2738B2e9767cc332AFdaD24)
+- [Frontend Application](http://localhost:3002)
 
-### 💡 Deployment Commands
+### 🎯 Next Steps for Production
 
-**To complete remaining deployments when network stabilizes:**
+1. **Security Audit**: Complete smart contract security review
+2. **Mainnet Deployment**: Deploy to Filecoin mainnet
+3. **Real Dataset Integration**: Partner with AI companies for datasets
+4. **Tellor Oracle Setup**: Configure AI verification queries
+5. **Community Launch**: Open marketplace to public 
 
-```bash
-# Individual contract deployment approach
-cd Contracts
-npx hardhat deploy --network calibration --tags individual
+### 📋 Contract Details
 
-# Alternative: Manual script deployment
-npx hardhat run scripts/deploy-marketplace.js --network calibration
-npx hardhat run scripts/deploy-payments.js --network calibration  
-npx hardhat run scripts/deploy-verification.js --network calibration
-``` 
+#### USDFC Token (Updated)
+- **Address**: `0x14b547e6d31705dab3bf1a382bAFFd8274127819`
+- **Exchange Rate**: 1000 USDFC per 1 FIL (0.1 FIL = 100 USDFC)
+- **Purpose**: Mock USDFC stablecoin for testing marketplace transactions
+- **Features**: Collateral-backed minting with FIL deposits
+
+#### VerifiAI Core Contracts
+- **Marketplace**: Main contract for listing and purchasing AI datasets
+- **Payments**: Handles escrow and subscription payments
+- **Verification**: Integrates with Tellor oracle for AI model verification
+- **MarketApiHelper**: Isolated contract for Filecoin storage deal interactions
+
+### 🎯 Key Features Deployed
+
+1. **USDFC Minting**: Users can mint USDFC by depositing FIL as collateral
+2. **Provider Staking**: Stake 100 USDFC to become a verified data provider  
+3. **Dataset Marketplace**: List and purchase AI training datasets
+4. **Filecoin Integration**: Direct integration with storage deals and proofs
+5. **Tellor Verification**: Oracle-based AI model performance verification
+
+### 🔗 Network Configuration
+
+- **Network**: Filecoin Calibration Testnet
+- **Chain ID**: 314159
+- **RPC**: `https://api.calibration.node.glif.io/rpc/v1`
+- **Explorer**: `https://calibration.filfox.info/en`
+
+### 📱 Frontend Integration
+
+All contract addresses have been updated in:
+- `frontend/constants/contractAddresses.json`
+- `frontend/src/config/contracts.js`
+
+### 🚀 Usage Instructions
+
+1. **Connect Wallet** to Filecoin Calibration network
+2. **Mint USDFC**: Send 0.1 FIL to get 100 USDFC tokens
+3. **Stake Provider**: Stake 100 USDFC to become a verified provider
+4. **List Datasets**: Upload AI training datasets to earn USDFC
+5. **Purchase Data**: Buy verified datasets to train AI models
+
+### ⚠️ Important Notes
+
+- This is a **testnet deployment** for demonstration purposes
+- USDFC is a mock token, not the real USDFC from Secured Finance
+- Exchange rates are generous for testing (1000 USDFC per FIL vs real-world rates)
+- All contracts are fully functional for the VeriFlow AI marketplace demo 
