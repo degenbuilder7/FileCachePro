@@ -182,8 +182,8 @@ export const useMarketplace = () => {
       setPurchases(purchaseList)
       return purchaseList
     } catch (err) {
-      console.error('Error fetching purchases:', err)
-      setError(err.message)
+      // console.error('Error fetching purchases:', err)
+      // setError(err.message)
       return []
     }
   }, [getMarketplaceReadOnly])
@@ -202,7 +202,7 @@ export const useMarketplace = () => {
         stake
       }
     } catch (err) {
-      console.error('Error getting provider status:', err)
+      // console.error('Error getting provider status:', err)
       return { isProvider: false, stake: '0' }
     }
   }, [address, getMarketplaceReadOnly])
@@ -217,7 +217,7 @@ export const useMarketplace = () => {
         dataset.provider.toLowerCase() === userAddress.toLowerCase()
       )
     } catch (err) {
-      console.error('Error getting user datasets:', err)
+      // console.error('Error getting user datasets:', err)
       return []
     }
   }, [address, fetchDatasets])
@@ -232,7 +232,7 @@ export const useMarketplace = () => {
         purchase.buyer.toLowerCase() === userAddress.toLowerCase()
       )
     } catch (err) {
-      console.error('Error getting user purchases:', err)
+      // console.error('Error getting user purchases:', err)
       return []
     }
   }, [address, fetchPurchases])

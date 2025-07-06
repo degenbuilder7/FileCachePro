@@ -36,8 +36,8 @@ export const useUSDFC = () => {
       setBalance(balanceFormatted)
       return balanceFormatted
     } catch (err) {
-      console.error('Error fetching USDFC balance:', err)
-      setError(err.message)
+    //   console.error('Error fetching USDFC balance:', err)
+    //   setError(err.message)
       return '0'
     }
   }, [address, getUSDFCReadOnly])
@@ -58,7 +58,7 @@ export const useUSDFC = () => {
       setCollateralInfo(info)
       return info
     } catch (err) {
-      console.error('Error fetching collateral info:', err)
+    //   console.error('Error fetching collateral info:', err)
       setError(err.message)
       return { depositedCollateral: '0', collateralRatio: '0' }
     }
@@ -119,7 +119,7 @@ export const useUSDFC = () => {
       
       return { hash }
     } catch (err) {
-      console.error('Error approving USDFC:', err)
+    //   console.error('Error approving USDFC:', err)
       toast.error(err.message || 'Approval failed', { id: 'approve' })
       setError(err.message)
       throw err
@@ -137,7 +137,7 @@ export const useUSDFC = () => {
       const allowanceWei = await contract.read.allowance([owner, spender])
       return formatEther(allowanceWei)
     } catch (err) {
-      console.error('Error getting allowance:', err)
+    //   console.error('Error getting allowance:', err)
       return '0'
     }
   }, [getUSDFCReadOnly])
@@ -169,7 +169,7 @@ export const useUSDFC = () => {
       
       return { hash }
     } catch (err) {
-      console.error('Error minting USDFC:', err)
+    //   console.error('Error minting USDFC:', err)
       toast.error(err.message || 'Minting failed', { id: 'mint' })
       setError(err.message)
       throw err
@@ -203,7 +203,7 @@ export const useUSDFC = () => {
       
       return { hash }
     } catch (err) {
-      console.error('Error redeeming USDFC:', err)
+    //   console.error('Error redeeming USDFC:', err)
       toast.error(err.message || 'Redemption failed', { id: 'redeem' })
       setError(err.message)
       throw err

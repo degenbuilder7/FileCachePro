@@ -263,16 +263,6 @@ const VerifiAIDashboard: React.FC<VerifiAIDashboardProps> = ({ className }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {marketplaceError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">Marketplace Error: {marketplaceError}</p>
-              </div>
-            )}
-            {verificationError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">Verification Error: {verificationError}</p>
-              </div>
-            )}
             {!marketplaceError && !verificationError && (
               <div className="text-center py-8 text-muted-foreground">
                 <p>Activity feed will appear here</p>
