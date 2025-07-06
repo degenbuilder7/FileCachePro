@@ -55,7 +55,7 @@ const wagmiConfig = getDefaultConfig({
 
 const queryClient = new QueryClient();
 
-export function Providers({ children }) {
+export default function Providers({ children }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>

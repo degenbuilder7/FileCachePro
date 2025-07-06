@@ -1,6 +1,114 @@
 // VerifiAI Contract Configuration for Filecoin Calibration
 // Updated with deployed contract addresses
 
+import contractAddresses from '../../constants/contractAddresses.json'
+import contractABIs from '../../constants/abi.json'
+
+// Get contract address for current network
+export const getContractAddress = (contractName, chainId = 314159) => {
+  const addresses = contractAddresses[chainId?.toString()]
+  if (!addresses) {
+    throw new Error(`Unsupported network: ${chainId}`)
+  }
+  
+  const address = addresses[contractName]
+  if (!address) {
+    throw new Error(`Contract ${contractName} not found on network ${chainId}`)
+  }
+  
+  return address
+}
+
+// Get contract ABI
+export const getContractABI = (contractName) => {
+  const abi = contractABIs[contractName]
+  if (!abi) {
+    throw new Error(`ABI for ${contractName} not found`)
+  }
+  return abi
+}
+
+// Contract configurations - restructured for useContracts hook
+export const contracts = {
+  314159: { // Filecoin Calibration chain ID
+    VerifiAIMarketplace: {
+      address: getContractAddress('VerifiAIMarketplace', 314159),
+      abi: getContractABI('VerifiAIMarketplace'),
+    },
+    
+    VerifiAIPayments: {
+      address: getContractAddress('VerifiAIPayments', 314159),
+      abi: getContractABI('VerifiAIPayments'),
+    },
+    
+    VerifiAIVerification: {
+      address: getContractAddress('VerifiAIVerification', 314159),
+      abi: getContractABI('VerifiAIVerification'),
+    },
+    
+    VeriFlowMarketApiHelper: {
+      address: getContractAddress('VeriFlowMarketApiHelper', 314159),
+      abi: getContractABI('VeriFlowMarketApiHelper'),
+    },
+    
+    USDFC: {
+      address: getContractAddress('USDFC', 314159),
+      abi: getContractABI('USDFC'),
+    },
+  }
+}
+
+// Legacy contract configurations (for backwards compatibility)
+export const contractsLegacy = {
+  VerifiAIMarketplace: {
+    name: 'VerifiAIMarketplace',
+    getAddress: (chainId) => getContractAddress('VerifiAIMarketplace', chainId),
+    abi: getContractABI('VerifiAIMarketplace'),
+  },
+  
+  VerifiAIPayments: {
+    name: 'VerifiAIPayments', 
+    getAddress: (chainId) => getContractAddress('VerifiAIPayments', chainId),
+    abi: getContractABI('VerifiAIPayments'),
+  },
+  
+  VerifiAIVerification: {
+    name: 'VerifiAIVerification',
+    getAddress: (chainId) => getContractAddress('VerifiAIVerification', chainId),
+    abi: getContractABI('VerifiAIVerification'),
+  },
+  
+  VeriFlowMarketApiHelper: {
+    name: 'VeriFlowMarketApiHelper',
+    getAddress: (chainId) => getContractAddress('VeriFlowMarketApiHelper', chainId),
+    abi: getContractABI('VeriFlowMarketApiHelper'),
+  },
+  
+  USDFC: {
+    name: 'USDFC',
+    getAddress: (chainId) => getContractAddress('USDFC', chainId),
+    abi: getContractABI('USDFC'),
+  },
+}
+
+// Helper to get all contracts for current network
+export const getAllContracts = (chainId = 314159) => {
+  return contracts[chainId] || {}
+}
+
+// Supported networks
+export const SUPPORTED_CHAINS = contractAddresses.supportedChainIds
+export const FILECOIN_CALIBRATION_CHAIN_ID = 314159
+
+// Network helpers
+export const isNetworkSupported = (chainId) => {
+  return SUPPORTED_CHAINS.includes(chainId)
+}
+
+export const getNetworkName = (chainId) => {
+  return contractAddresses.chainNames[chainId?.toString()] || 'Unknown Network'
+}
+
 export const FILECOIN_CALIBRATION_CONFIG = {
   chainId: 314159,
   name: "Filecoin Calibration",
@@ -13,11 +121,11 @@ export const FILECOIN_CALIBRATION_CONFIG = {
     TELLOR: "0xb2CB696fE5244fB9004877e58dcB680cB86Ba444", // Tellor Oracle
   },
   
-  // VerifiAI contract addresses
+  // VerifiAI contract addresses - UPDATED WITH CORRECT DEPLOYED ADDRESSES
   contracts: {
     VerifiAIMarketplace: "0xb994dFecA893A8248e37a33ABdC9bC67f7f0322d", // ✅ DEPLOYED
-    VerifiAIPayments: "0x1B4d1eDE4F7F22BE0Ce596203765291BBb59E9dC",    // ✅ DEPLOYED
-    VerifiAIVerification: "0xA4643b8582C4751457030b3c980B2aACcA660CC5", // ✅ DEPLOYED
+    VerifiAIPayments: "0x1B4d1eDE4F7F22BE0Ce596203765291BBb59E9dC",    // ✅ DEPLOYED - CORRECTED
+    VerifiAIVerification: "0xA4643b8582C4751457030b3c980B2aACcA660CC5", // ✅ DEPLOYED - CORRECTED
     VeriFlowMarketApiHelper: "0x6aEf0883c246435A60AD5921582b22c9a7132175", // ✅ DEPLOYED
   },
   
@@ -28,7 +136,7 @@ export const FILECOIN_CALIBRATION_CONFIG = {
     providerStakeAmount: "100000000000000000000", // 100 USDFC
   },
 
-  // Network status
+  // Network status - ALL DEPLOYED SUCCESSFULLY
   status: {
     usdfc: "deployed",
     marketApiHelper: "deployed", 

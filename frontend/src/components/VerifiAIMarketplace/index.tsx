@@ -6,18 +6,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther, formatEther } from 'viem';
-import WalletConnect from '@/components/Header/components/WalletConnect';
+import { useAccount, useChainId } from 'wagmi';
+import { filecoinCalibration } from 'wagmi/chains';
+import { useMarketplace } from '../../hooks/useMarketplace';
+import { useUSDFC } from '../../hooks/useUSDFC';
+import LoadingSpinner from '../LoadingSpinner';
+import DatasetCard from '../DatasetCard';
 
 interface Dataset {
   id: number;
   provider: string;
   metadataUri: string;
-  pricePerBatch: bigint;
+  pricePerBatch: string;
   filecoinDealId: number;
+  totalSales: number;
   isActive: boolean;
-  totalSales: bigint;
+  createdAt: Date;
 }
 
 interface VerifiAIMarketplaceProps {
@@ -26,40 +30,28 @@ interface VerifiAIMarketplaceProps {
 
 const VerifiAIMarketplace: React.FC<VerifiAIMarketplaceProps> = ({ className }) => {
   const { address, isConnected } = useAccount();
-  const [searchTerm, setSearchTerm] = useState('');
+  const chainId = useChainId();
+  const isCorrectChain = chainId === filecoinCalibration.id;
+  
+  const {
+    datasets,
+    isLoading,
+    error,
+    purchaseData,
+    getProviderStatus
+  } = useMarketplace();
+  
+  const { formattedBalance } = useUSDFC();
+  
+  // State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredDatasets, setFilteredDatasets] = useState<Dataset[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [datasets, setDatasets] = useState<Dataset[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [userStake, setUserStake] = useState<bigint>(0n);
+  const [sortBy, setSortBy] = useState('newest');
+  const [purchasingId, setPurchasingId] = useState<number | null>(null);
+  const [providerStatus, setProviderStatus] = useState({ isProvider: false, stake: '0' });
 
-  // Contract interaction hooks
-  const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash,
-  });
-
-  // Read user stake
-  const { data: stakeData } = useReadContract({
-    address: '0x1234567890123456789012345678901234567890', // VeriFiAI Marketplace contract
-    abi: [
-      {
-        inputs: [{ name: 'provider', type: 'address' }],
-        name: 'providerStakes',
-        outputs: [{ name: '', type: 'uint256' }],
-        stateMutability: 'view',
-        type: 'function',
-      },
-    ],
-    functionName: 'providerStakes',
-    args: [address],
-  });
-
-  useEffect(() => {
-    if (stakeData) {
-      setUserStake(stakeData as bigint);
-    }
-  }, [stakeData]);
-
+  // Categories for filtering
   const categories = [
     { id: 'all', name: 'All Categories', icon: '🔍' },
     { id: 'computer-vision', name: 'Computer Vision', icon: '👁️' },
@@ -71,79 +63,82 @@ const VerifiAIMarketplace: React.FC<VerifiAIMarketplaceProps> = ({ className }) 
     { id: 'reinforcement', name: 'Reinforcement Learning', icon: '🎮' },
   ];
 
-  const sampleDatasets: Dataset[] = [
-    {
-      id: 1,
-      provider: '0x742d35Cc6634C0532925a3b8D0C0fB0e',
-      metadataUri: 'QmX1Y2Z3...',
-      pricePerBatch: parseEther('10'),
-      filecoinDealId: 12345,
-      isActive: true,
-      totalSales: parseEther('150'),
-    },
-    {
-      id: 2,
-      provider: '0x742d35Cc6634C0532925a3b8D0C0fB0e',
-      metadataUri: 'QmA4B5C6...',
-      pricePerBatch: parseEther('25'),
-      filecoinDealId: 67890,
-      isActive: true,
-      totalSales: parseEther('300'),
-    },
-  ];
+  // Fetch provider status
+  useEffect(() => {
+    const fetchProviderStatus = async () => {
+      if (address && getProviderStatus) {
+        try {
+          const status = await getProviderStatus(address);
+          setProviderStatus(status);
+        } catch (error) {
+          console.error('Error fetching provider status:', error);
+        }
+      }
+    };
 
-  const handleStakeAsProvider = async () => {
+    fetchProviderStatus();
+  }, [address, getProviderStatus]);
+
+  // Filter and search datasets
+  useEffect(() => {
+    let filtered: Dataset[] = [...datasets];
+
+    // Apply search
+    if (searchQuery.trim()) {
+      filtered = filtered.filter((dataset: Dataset) => 
+        dataset.metadataUri.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        dataset.provider.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter((dataset: Dataset) => dataset.isActive);
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'newest':
+        filtered.sort((a: Dataset, b: Dataset) => b.id - a.id);
+        break;
+      case 'oldest':
+        filtered.sort((a: Dataset, b: Dataset) => a.id - b.id);
+        break;
+      case 'price-low':
+        filtered.sort((a: Dataset, b: Dataset) => parseFloat(a.pricePerBatch) - parseFloat(b.pricePerBatch));
+        break;
+      case 'price-high':
+        filtered.sort((a: Dataset, b: Dataset) => parseFloat(b.pricePerBatch) - parseFloat(a.pricePerBatch));
+        break;
+      case 'popular':
+        filtered.sort((a: Dataset, b: Dataset) => b.totalSales - a.totalSales);
+        break;
+      default:
+        break;
+    }
+
+    setFilteredDatasets(filtered);
+  }, [datasets, searchQuery, selectedCategory, sortBy]);
+
+  // Handle dataset purchase
+  const handlePurchase = async (datasetId: number, batchCount: number = 1) => {
+    if (!isConnected || !isCorrectChain) {
+      alert('Please connect your wallet to the correct network');
+      return;
+    }
+
+    setPurchasingId(datasetId);
     try {
-      await writeContract({
-        address: '0x1234567890123456789012345678901234567890',
-        abi: [
-          {
-            inputs: [{ name: 'amount', type: 'uint256' }],
-            name: 'stakeAsProvider',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-          },
-        ],
-        functionName: 'stakeAsProvider',
-        args: [parseEther('100')], // 100 USDFC stake
-      });
-    } catch (error) {
-      console.error('Staking failed:', error);
+      await purchaseData(datasetId, batchCount);
+    } catch (err) {
+      console.error('Purchase failed:', err);
+    } finally {
+      setPurchasingId(null);
     }
   };
 
-  const handlePurchaseData = async (datasetId: number, batchCount: number) => {
-    try {
-      await writeContract({
-        address: '0x1234567890123456789012345678901234567890',
-        abi: [
-          {
-            inputs: [
-              { name: 'datasetId', type: 'uint256' },
-              { name: 'batchCount', type: 'uint256' }
-            ],
-            name: 'purchaseData',
-            outputs: [],
-            stateMutability: 'nonpayable',
-            type: 'function',
-          },
-        ],
-        functionName: 'purchaseData',
-        args: [BigInt(datasetId), BigInt(batchCount)],
-      });
-    } catch (error) {
-      console.error('Purchase failed:', error);
-    }
-  };
-
-  const filteredDatasets = sampleDatasets.filter(dataset => {
-    const matchesSearch = searchTerm === '' || 
-      dataset.metadataUri.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || 
-      dataset.metadataUri.includes(selectedCategory);
-    return matchesSearch && matchesCategory;
-  });
+  // Get featured datasets (first 3 active datasets)
+  const featuredDatasets = (datasets as any[]).filter((d: any) => d.isActive).slice(0, 3);
 
   if (!isConnected) {
     return (
@@ -152,9 +147,24 @@ const VerifiAIMarketplace: React.FC<VerifiAIMarketplaceProps> = ({ className }) 
           <CardContent>
             <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
             <p className="text-muted-foreground mb-6">
-              Connect your wallet to access the VeriFlow AI Data Marketplace
+              Please connect your wallet to access the VeriFlow AI Data Marketplace
             </p>
-            <WalletConnect />
+            <Button className="vf-button-primary">Connect Wallet</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isCorrectChain) {
+    return (
+      <div className={cn("w-full max-w-7xl mx-auto p-6", className)}>
+        <Card className="text-center py-12">
+          <CardContent>
+            <h2 className="text-2xl font-bold mb-4 text-red-600">Wrong Network</h2>
+            <p className="text-muted-foreground mb-6">
+              Please switch to Filecoin Calibration network to access the marketplace
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -162,193 +172,194 @@ const VerifiAIMarketplace: React.FC<VerifiAIMarketplaceProps> = ({ className }) 
   }
 
   return (
-    <div className={cn("w-full max-w-7xl mx-auto p-6", className)}>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold vf-gradient-primary bg-clip-text text-transparent">
-          VerifiAI Data Marketplace
+    <div className={cn("w-full max-w-7xl mx-auto p-6 space-y-8", className)}>
+      {/* Header Section */}
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          VeriFlow AI Data Marketplace
         </h1>
-        <p className="text-muted-foreground mt-2">
-          First verifiable AI training data marketplace on Filecoin with cryptographic proofs and USDFC payments
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          The first verifiable AI training data marketplace on Filecoin with USDFC payments
         </p>
-      </div>
-
-      {/* Provider Status */}
-      <Card className="vf-card mb-8">
-        <CardHeader>
-          <CardTitle>Provider Status</CardTitle>
-          <CardDescription>
-            Stake USDFC to become a verified data provider
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Your Stake</p>
-              <p className="text-2xl font-bold">{formatEther(userStake)} USDFC</p>
-            </div>
-            <div className="flex gap-2">
-              {userStake >= parseEther('100') ? (
-                <Badge className="bg-green-100 text-green-800">Verified Provider</Badge>
-              ) : (
-                <Button 
-                  onClick={handleStakeAsProvider}
-                  disabled={isPending || isConfirming}
-                  className="vf-button-primary"
-                >
-                  {isPending || isConfirming ? 'Staking...' : 'Stake 100 USDFC'}
-                </Button>
-              )}
-            </div>
+        
+        <div className="flex flex-wrap justify-center gap-4 mt-6">
+          <div className="bg-blue-50 rounded-lg px-4 py-2">
+            <p className="text-sm text-muted-foreground">Total Datasets</p>
+            <p className="text-2xl font-bold text-blue-600">{datasets.length}</p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="bg-green-50 rounded-lg px-4 py-2">
+            <p className="text-sm text-muted-foreground">Your USDFC Balance</p>
+            <p className="text-2xl font-bold text-green-600">{formattedBalance}</p>
+          </div>
+          <div className="bg-purple-50 rounded-lg px-4 py-2">
+            <p className="text-sm text-muted-foreground">Your Stake</p>
+            <p className="text-2xl font-bold text-purple-600">{providerStatus.stake} USDFC</p>
+          </div>
+          <div className="flex gap-2">
+            {providerStatus.isProvider ? (
+              <Badge className="bg-green-100 text-green-800">Verified Provider</Badge>
+            ) : (
+              <Badge variant="outline">Stake to become a provider</Badge>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Search and Filters */}
-      <Card className="vf-card mb-8">
+      <Card>
         <CardHeader>
-          <CardTitle>Discover AI Datasets</CardTitle>
+          <CardTitle>Browse Datasets</CardTitle>
           <CardDescription>
-            Browse verified, high-quality training data with Filecoin storage guarantees
+            Discover and purchase verified AI training datasets stored on Filecoin
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 mb-6">
-            <Input
-              placeholder="Search datasets by name, provider, or description..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1"
-            />
-            <Button className="vf-button-primary">
-              🔍 Search
-            </Button>
-          </div>
-          
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
-                className={selectedCategory === category.id ? "vf-button-primary" : ""}
+          <div className="flex flex-col lg:flex-row gap-4 items-center">
+            <div className="flex-1">
+              <Input
+                type="text"
+                placeholder="Search datasets by provider, metadata URI..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            
+            <div className="flex gap-2">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
               >
-                {category.icon} {category.name}
-              </Button>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.icon} {category.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="popular">Most Popular</option>
+              </select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Featured Datasets */}
+      {featuredDatasets.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold mb-6">Featured Datasets</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredDatasets.map((dataset: any) => (
+              <DatasetCard
+                key={dataset.id}
+                dataset={dataset}
+                onPurchase={(datasetObj: any) => handlePurchase(datasetObj.id, 1)}
+              />
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
-      {/* Datasets Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredDatasets.map((dataset) => (
-          <Card key={dataset.id} className="vf-card hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">Dataset #{dataset.id}</CardTitle>
-                  <CardDescription className="mt-1">
-                    Provider: {dataset.provider.slice(0, 8)}...{dataset.provider.slice(-6)}
-                  </CardDescription>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <Badge className="bg-blue-100 text-blue-800">Verified</Badge>
-                  <Badge variant="outline">Filecoin Deal #{dataset.filecoinDealId}</Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">IPFS Hash</p>
-                  <p className="font-mono text-sm">{dataset.metadataUri}</p>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Price per Batch</p>
-                    <p className="text-xl font-bold">{formatEther(dataset.pricePerBatch)} USDFC</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">Total Sales</p>
-                    <p className="font-semibold">{formatEther(dataset.totalSales)} USDFC</p>
-                  </div>
-                </div>
+      {/* All Datasets */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">
+            All Datasets ({filteredDatasets.length})
+          </h2>
+          {error && (
+            <div className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-md">
+              Error: {error}
+            </div>
+          )}
+        </div>
 
-                <div className="flex gap-2">
-                  <Button 
-                    className="flex-1 vf-button-primary"
-                    onClick={() => handlePurchaseData(dataset.id, 1)}
-                    disabled={isPending || isConfirming}
-                  >
-                    {isPending || isConfirming ? 'Purchasing...' : 'Purchase 1 Batch'}
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    📋 Details
-                  </Button>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  Stored on Filecoin with F3 Fast Finality
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Features Section */}
-      <Card className="vf-card mt-8">
-        <CardHeader>
-          <CardTitle>🚀 VeriFlow Features</CardTitle>
-          <CardDescription>
-            Powered by Filecoin's cutting-edge infrastructure
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                ⚡
-              </div>
-              <h3 className="font-semibold mb-2">F3 Fast Finality</h3>
-              <p className="text-sm text-muted-foreground">
-                450x faster transactions (minutes vs hours)
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                💰
-              </div>
-              <h3 className="font-semibold mb-2">USDFC Payments</h3>
-              <p className="text-sm text-muted-foreground">
-                Stable payments with Filecoin's native stablecoin
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                🔐
-              </div>
-              <h3 className="font-semibold mb-2">Tellor Verification</h3>
-              <p className="text-sm text-muted-foreground">
-                AI model performance verified by oracles
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                📦
-              </div>
-              <h3 className="font-semibold mb-2">PDP Hot Storage</h3>
-              <p className="text-sm text-muted-foreground">
-                Proof of Data Possession for active ML datasets
-              </p>
-            </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <LoadingSpinner />
+            <span className="ml-3 text-gray-600">Loading datasets...</span>
           </div>
-        </CardContent>
-      </Card>
+        ) : filteredDatasets.length === 0 ? (
+          <Card className="p-12 text-center">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No datasets match your search
+            </h3>
+            <p className="text-gray-500 mb-4">
+              Try adjusting your search criteria or browse all datasets
+            </p>
+            <Button onClick={() => setSearchQuery('')} variant="outline">
+              Clear Search
+            </Button>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDatasets.map((dataset) => (
+              <Card key={dataset.id} className="vf-card hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Dataset #{dataset.id}</CardTitle>
+                      <CardDescription className="mt-1">
+                        Provider: {dataset.provider.slice(0, 8)}...{dataset.provider.slice(-6)}
+                      </CardDescription>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className="bg-blue-100 text-blue-800">Verified</Badge>
+                      <Badge variant="outline">Deal #{dataset.filecoinDealId}</Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">IPFS URI</p>
+                      <p className="font-mono text-sm truncate">{dataset.metadataUri}</p>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Price per Batch</p>
+                        <p className="text-xl font-bold">{dataset.pricePerBatch} USDFC</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Total Sales</p>
+                        <p className="font-semibold">{dataset.totalSales}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button 
+                        className="flex-1 vf-button-primary"
+                        onClick={() => handlePurchase(dataset.id, 1)}
+                        disabled={purchasingId === dataset.id}
+                      >
+                        {purchasingId === dataset.id ? 'Purchasing...' : 'Purchase 1 Batch'}
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        📋 Details
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      Stored on Filecoin with F3 Fast Finality
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
