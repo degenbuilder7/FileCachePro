@@ -233,7 +233,7 @@ Block Explorer: https://calibration.filfox.info/en
 
 #### **3. Clone & Run Frontend**
 ```bash
-git clone https://github.com/your-org/veriflow-marketplace
+git clone https://github.com/kamalbuilds/VerifiAI
 cd frontend
 bun install           # Faster than npm
 bun run dev           # Start development server
