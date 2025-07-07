@@ -104,6 +104,15 @@ contract USDFC is ERC20, Ownable {
      * @dev Fallback function to handle direct FIL transfers for minting
      */
     receive() external payable {
-        mintWithCollateral();
+        require(msg.value > 0, "Must send FIL as collateral");
+        
+        // Calculate USDFC to mint (assuming 1 FIL = $5 for testing)
+        uint256 usdcAmount = (msg.value * 454) / 100;
+        
+        collateralDeposits[msg.sender] += msg.value;
+        _mint(msg.sender, usdcAmount);
+        
+        emit Mint(msg.sender, usdcAmount, msg.value);
+        emit CollateralDeposited(msg.sender, msg.value);
     }
 } 

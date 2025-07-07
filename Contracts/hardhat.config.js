@@ -5,9 +5,11 @@ require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000001";
+// Use a proper 32-byte dummy private key for compilation, real one for deployment
+const DUMMY_PRIVATE_KEY = "0x1111111111111111111111111111111111111111111111111111111111111111";
+const PRIVATE_KEY = process.env.PRIVATE_KEY || DUMMY_PRIVATE_KEY;
 
-// Only warn about missing private key for non-compilation tasks
+// Only warn about missing private key for deployment tasks
 if (!process.env.PRIVATE_KEY && (process.argv.includes("deploy") || process.argv.includes("run"))) {
   console.warn("⚠️  WARNING: Please set your PRIVATE_KEY in a .env file for deployment");
 }
@@ -44,15 +46,17 @@ module.exports = {
       }
     },
     calibration: {
-      url: "https://filecoin-calibration.chainup.net/rpc/v1",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      url: "https://api.calibration.node.glif.io/rpc/v1", // Updated to GLIF RPC
+      chainId: 314159,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [DUMMY_PRIVATE_KEY],
       gas: "auto",
       gasPrice: "auto",
+      timeout: 60000,
     },
     mainnet: {
       chainId: 314,
-      url: "https://filecoin.chainup.net/rpc/v1",
-      accounts: [PRIVATE_KEY],
+      url: "https://api.node.glif.io/rpc/v1", // Updated to GLIF RPC
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [DUMMY_PRIVATE_KEY],
       gas: "auto",
       gasPrice: "auto",
       timeout: 60000,

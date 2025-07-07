@@ -29,9 +29,9 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log(`📊 Provider Stake: ${PROVIDER_STAKE_AMOUNT} wei (100 USDFC)`);
     log("----------------------------------------------------");
 
-    // 2. Deploy VerifiAIMarketApiHelper
-    log("📋 Deploying VerifiAIMarketApiHelper...");
-    const marketApiHelper = await deploy("VerifiAIMarketApiHelper", {
+    // 2. Deploy VeriFlowMarketApiHelper
+    log("📋 Deploying VeriFlowMarketApiHelper...");
+    const marketApiHelper = await deploy("VeriFlowMarketApiHelper", {
         from: deployer,
         args: [],
         log: true,
