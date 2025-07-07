@@ -1,24 +1,24 @@
 // VerifiAI Contract Configuration for Filecoin Calibration
-// This file will be updated with actual deployed contract addresses
+// Updated with deployed contract addresses
 
 export const FILECOIN_CALIBRATION_CONFIG = {
   chainId: 314159,
   name: "Filecoin Calibration",
-  rpcUrl: "https://calibration.filfox.info/rpc/v1",
+  rpcUrl: "https://api.calibration.node.glif.io/rpc/v1",
   blockExplorer: "https://calibration.filfox.info/en",
   
   // Token addresses
   tokens: {
-    USDFC: "0x0000000000000000000000000000000000000000", // USDFC on Calibration (UPDATE AFTER DEPLOYMENT)
+    USDFC: "0x0f703F65596731cFc036cE4eb2acEF37B9169a6e", // ✅ DEPLOYED
     TELLOR: "0xb2CB696fE5244fB9004877e58dcB680cB86Ba444", // Tellor Oracle
   },
   
-  // VerifiAI contract addresses (to be updated after deployment)
+  // VerifiAI contract addresses
   contracts: {
-    VerifiAIMarketplace: "0x0000000000000000000000000000000000000000", // UPDATE AFTER DEPLOYMENT
-    VerifiAIPayments: "0x0000000000000000000000000000000000000000",    // UPDATE AFTER DEPLOYMENT
-    VerifiAIVerification: "0x0000000000000000000000000000000000000000", // UPDATE AFTER DEPLOYMENT
-    VerifiAIMarketApiHelper: "0x0000000000000000000000000000000000000000", // UPDATE AFTER DEPLOYMENT
+    VerifiAIMarketplace: "0xb994dFecA893A8248e37a33ABdC9bC67f7f0322d", // ✅ DEPLOYED
+    VerifiAIPayments: "0x1B4d1eDE4F7F22BE0Ce596203765291BBb59E9dC",    // ✅ DEPLOYED
+    VerifiAIVerification: "0xA4643b8582C4751457030b3c980B2aACcA660CC5", // ✅ DEPLOYED
+    VeriFlowMarketApiHelper: "0x6aEf0883c246435A60AD5921582b22c9a7132175", // ✅ DEPLOYED
   },
   
   // Deployment configuration
@@ -26,6 +26,15 @@ export const FILECOIN_CALIBRATION_CONFIG = {
     deployerAddress: "0x268d62aba7C42fCB4D72A83137DB503935f764fF",
     treasuryAddress: "0x268d62aba7C42fCB4D72A83137DB503935f764fF",
     providerStakeAmount: "100000000000000000000", // 100 USDFC
+  },
+
+  // Network status
+  status: {
+    usdfc: "deployed",
+    marketApiHelper: "deployed", 
+    marketplace: "deployed",
+    payments: "deployed",
+    verification: "deployed"
   }
 };
 
@@ -58,6 +67,14 @@ export const CONTRACT_ABIS = {
     "function redeem(uint256 amount) external",
     "function getCollateralInfo(address user) external view returns (uint256, uint256)",
     "function mint(address to, uint256 amount) external"
+  ],
+
+  VeriFlowMarketApiHelper: [
+    "function getDealActivationInfo(uint64 dealId) external returns (tuple(bool isActivated, bool isTerminated, int64 activatedEpoch, int64 terminatedEpoch))",
+    "function getDealDataInfo(uint64 dealId) external returns (tuple(bool isValid, uint64 dataSize, bytes32 dataCommitment))",
+    "function isDealActive(uint64 dealId) external returns (bool)",
+    "function getDealClient(uint64 dealId) external returns (uint64)",
+    "function getDealProvider(uint64 dealId) external returns (uint64)"
   ]
 };
 
